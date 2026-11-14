@@ -35,6 +35,7 @@ function studentId(item){return STUDENT_IDS[cleanName(item.name)]||item.id}
 function isVariant(item){return item.category==='variant'||/[（(＊*]/.test(item.name)}
 function hydrateItem(item){item={...item,name:cleanName(item.name)};const id=studentId(item);return id?{...item,id,url:icon(id),category:isVariant(item)?'variant':'base'}:item}
 function imageURLs(item){const id=studentId(item),slug=PORTRAIT_SLUGS[item.name],atlas=ATLAS_PORTRAITS[item.name];return [...new Set([
+ VERIFIED_NPC_PORTRAITS[item.name],
  EMBEDDED_PORTRAITS[item.name],
  ...(id?[icon(id),assetRoot+'/images/student/collection/'+id+'.webp']:[]),
  ...(EXTRA_PORTRAITS[item.name]?[extraPortraitRoot+EXTRA_PORTRAITS[item.name],'https://cdn.jsdelivr.net/gh/treslyy/blue-archive-sorter@main/assets/portraits/'+EXTRA_PORTRAITS[item.name]]:[]),
@@ -44,14 +45,63 @@ function imageURLs(item){const id=studentId(item),slug=PORTRAIT_SLUGS[item.name]
 ].filter(Boolean))]}
 // Each source is tried once with a timeout, also during comparisons. Data URLs work offline.
 function loadImage(img,item,onFailure){const urls=imageURLs(item);let next=0,timer=null;img.alt=item.name;img.crossOrigin='anonymous';img.referrerPolicy='no-referrer';const stop=()=>{clearTimeout(timer);img.onerror=img.onload=null};const attempt=()=>{clearTimeout(timer);if(!img.isConnected){stop();return}if(next>=urls.length){stop();onFailure();return}const url=urls[next++];img.onload=()=>{clearTimeout(timer);if(!img.isConnected){stop();return}try{const cropped=cropPortrait(img,item,url);if(cropped!==img){stop();img.src=cropped.toDataURL('image/png')}else stop()}catch(e){attempt()}};img.onerror=attempt;timer=setTimeout(attempt,4000);img.src=url};attempt()}
-const extra=FALLBACK.extras.map(n=>({name:n,category:'npc',url:''}));
+const extra=FALLBACK.extras.filter(n=>!Object.prototype.hasOwnProperty.call(STUDENT_IDS,n)).map(n=>({name:n,category:'npc',url:''}));
 const builtIn=[...[...new Set([...FALLBACK.base,...Object.keys(STUDENT_IDS).filter(name=>!isVariant({name}))])].map(n=>({name:n,category:'base',url:''})),...extra];
 const SORTER_EXCLUDED_NAMES=new Set(["ベアトリーチェ","ニャン天丸","ニャンテンマル"]);
+const VERIFIED_NPC_PORTRAITS={
+"スイコ":"https://static.kivo.wiki/images/students/%E9%B9%B0%E9%87%8E%E4%B8%BB%20%E7%BF%A0%E5%AD%90/original/%E3%82%B9%E3%82%A4%E3%82%B3.png",
+"ナゴミ":"https://static.kivo.wiki/images/students/%E4%BA%94%E7%99%BE%E9%9B%80%20%E5%92%8C%E7%BE%8E/original/%E3%83%8A%E3%82%B4%E3%83%9F.png",
+"ショウコ":"https://static.kivo.wiki/images/students/%20CH0364/original/CH0364.png",
+"ミナト":"https://static.kivo.wiki/images/students/%E6%B5%B7%E8%B7%AF%20%E5%87%91/original/Minato.png"
+,
+"アミ":"https://static.kivo.wiki/images/students/%E7%81%AF%E4%B8%8B%20%E4%BA%9A%E7%BE%8E/original/Ami.png",
+"サナエ":"https://static.kivo.wiki/images/students/%E8%88%B9%E5%AE%88%20%E6%97%A9%E8%8B%97/original/Sanae.png",
+"スミカ":"https://static.kivo.wiki/images/students/%201/original/%E3%82%B9%E3%83%9F%E3%82%AB.png",
+"ミツキ":"https://static.kivo.wiki/images/students/%E5%8D%83%E7%9F%B3%20%E7%BE%8E%E6%9C%88/original/Mitsuki.png",
+"マユミ":"https://static.kivo.wiki/images/students/%20CH0362/original/CH0362.png",
+"カレン":"https://static.kivo.wiki/images/students/%20CH0363/original/CH0363.png",
+"マキナ":"https://static.kivo.wiki/images/students/%20%E7%8E%9B%E7%90%AA%E5%A8%9C/original/makina.png",
+"ナナミ":"https://static.kivo.wiki/images/students/%E6%8A%A4%E5%AE%88%20%E4%B8%83%E6%B5%B7/original/Nanami.png",
+"ミスズ":"https://static.kivo.wiki/images/students/%E7%9B%91%E5%8E%9F%20%E7%BE%8E%E9%93%83/original/%E5%9B%BE%E5%B1%82%201.png",
+"アキラ":"https://static.kivo.wiki/images/students/%E6%B8%85%E6%BE%84%20%E6%99%B6/%E5%88%B6%E6%9C%8D/miria.png",
+"アケミ":"https://static.kivo.wiki/images/students/%E6%A0%97%E6%BB%A8%20%E6%98%8E%E7%BE%8E/original/%E5%A7%90%E8%B4%B5.png",
+"ヒロミ":"https://static.kivo.wiki/images/students/%20%E8%A3%95%E7%BE%8E/original/%E3%83%92%E3%83%AD%E3%83%9F.png",
+"ツバサ":"https://static.kivo.wiki/images/students/%E7%BE%BD%E5%92%8B%20%E7%BF%BC/original/%E5%9B%BE%E5%B1%82%201.png",
+"カナエ":"https://static.kivo.wiki/images/students/%E5%AE%AB%E5%86%85%20%E5%8F%B6/original/%E3%82%AB%E3%83%8A%E3%82%A8.png",
+"ナツキ":"https://static.kivo.wiki/images/students/%E4%BA%BA%E5%8A%9B%E8%BD%A6%E5%AD%A6%E7%94%9FA/avatar.png",
+"アラタ":"https://static.kivo.wiki/images/students/%E6%96%B0/avatar.png",
+"スオウ":"https://static.kivo.wiki/images/students/%E6%9C%9D%E9%9B%BE%20%E5%91%A8%E9%98%B2/avatar.png",
+"コクリコ":"https://static.kivo.wiki/images/students/%E5%8B%98%E8%A7%A3%E7%94%B1%E5%B0%8F%E8%B7%AF%20%E8%99%9E%E7%BE%8E%E4%BA%BA/original/11.png",
+"シュロ":"https://static.kivo.wiki/images/students/%E7%AE%AD%E5%90%B9%20%E6%A3%95%E6%A6%88/avatar.png",
+"アザミ":"https://static.kivo.wiki/images/students/%E5%9C%9F%E7%94%9F%20%E8%93%9F/%E5%92%8C%E6%9C%8D/CH0289_spr_00.png",
+"クズノハ":"https://static.kivo.wiki/images/students/%E8%91%9B%E5%8F%B6/avatar.png",
+"カグヤ":"https://static.kivo.wiki/images/students/%E6%BC%86%E5%8E%9F%20%E8%BE%89%E5%A4%9C/original/%E8%BE%89%E5%A4%9C.png",
+"ユキノ":"https://static.kivo.wiki/images/students/%E4%B8%83%E5%BA%A6%20%E9%9B%AA%E4%B9%83/avatar.png",
+"マイ":"https://static.kivo.wiki/images/students/%E8%88%9E/avatar.png",
+"マイア":"https://static.kivo.wiki/images/students/%E7%AB%8B%E6%9C%A8%20%E8%BF%88%E4%BA%9A/original/maia.png",
+"ミライ":"https://static.kivo.wiki/images/students/%20%E6%9C%AA%E6%9D%A5/original/%E6%9C%AA%E6%9D%A5.png",
+"アヤメ":"https://static.kivo.wiki/images/students/%E4%B8%83%E7%A8%9C%20%E8%8F%96%E8%92%B2/original/CH0223_spr_00.png",
+"カイ":"https://static.kivo.wiki/images/students/%E7%94%B3%E8%B0%B7%20%E5%BB%BB/avatar.png",
+"連邦生徒会長":"https://static.kivo.wiki/images/students/%20%E8%81%94%E9%82%A6%E5%AD%A6%E7%94%9F%E4%BC%9A%E9%95%BF/original/fake.png",
+"アイン":"https://static.kivo.wiki/images/students/%E3%82%A2%E3%82%A4%E3%83%B3/avatar.png",
+"ソフ":"https://static.kivo.wiki/images/students/%E3%82%BD%E3%83%95/avatar.png",
+"マルクト":"https://static.kivo.wiki/images/students/%20%E9%A9%AC%E8%B7%AF%E5%BA%93%E7%89%B9/original/malkuth.png",
+"プラナ":"https://static.kivo.wiki/images/students/%E6%99%AE%E6%8B%89%E5%A8%9C/avatar.png",
+"ソラ":"https://static.kivo.wiki/images/students/%E7%A9%BA/avatar.png",
+"リン":"https://static.kivo.wiki/images/students/%E4%B8%83%E7%A5%9E%20%E5%87%9B/avatar.png",
+"モモカ":"https://static.kivo.wiki/images/students/%E7%94%B1%E8%89%AF%E6%9C%A8%20%E6%A1%83%E9%A6%99/avatar.png",
+"カヤ":"https://static.kivo.wiki/images/students/%E4%B8%8D%E7%9F%A5%E7%81%AB%20%E8%8A%B1%E8%80%B6/avatar.png",
+"アユム":"https://static.kivo.wiki/images/students/%E5%B2%A9%E4%BB%93%20%E6%AD%A5%E7%BE%8E/avatar.png",
+"アオイ":"https://static.kivo.wiki/images/students/%E8%91%B5/avatar.png",
+"ハイネ":"https://static.kivo.wiki/images/students/%E7%81%B0%E9%9F%B3/avatar.png",
+"スモモ":"https://static.kivo.wiki/images/students/%E6%9D%8E/avatar.png",
+"ユメ":"https://static.kivo.wiki/images/students/%E6%A2%A6/avatar.png",
+"シノン":"https://static.kivo.wiki/images/students/%E5%B7%9D%E6%B5%81%20%E8%AF%97%E4%B9%83/avatar.png"};
 catalogue=builtIn.map(hydrateItem).filter(x=>!isVariant(x)&&!SORTER_EXCLUDED_NAMES.has(String(x.name||"").trim())&&!SORTER_EXCLUDED_NAMES.has(cleanName(x.name)));
 function show(id){['setup','play','results'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
 function cleanName(n){const name=String(n||'').trim();return name==='ニャン天丸'?'ニャンテンマル':name}
 function fromDB(data){return Object.values(data).filter(x=>x&&x.Id&&x.Name).map(x=>({name:x.Name,id:x.Id,url:icon(x.Id),category:/[（(＊*]/.test(x.Name)?'variant':'base'})).filter(x=>!isVariant(x))}
-async function load(){let result=[];for(const source of sources){const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),6500);try{const r=await fetch(source,{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);result=fromDB(await r.json());if(!result.length)throw Error('Empty student data');break}catch(e){}finally{clearTimeout(timeout)}}catalogue=[...new Map([...builtIn.map(hydrateItem),...result.map(hydrateItem)].filter(x=>!isVariant(x)&&!EXCLUDED_NO_PORTRAIT.has(x.name)).map(x=>[x.name,x])).values()];$('notice').textContent=result.length?'画像付き生徒データ '+result.length+'件を取得しました。NPCは補助リストから追加します。':'通信が不安定なため内蔵リストで遊べます。画像は代替URLからも取得します。';}load();
+async function load(){let result=[];for(const source of sources){const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),6500);try{const r=await fetch(source,{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);result=fromDB(await r.json());if(!result.length)throw Error('Empty student data');break}catch(e){}finally{clearTimeout(timeout)}}catalogue=[...new Map([...builtIn.map(hydrateItem),...result.map(hydrateItem)].filter(x=>!isVariant(x)&&!EXCLUDED_NO_PORTRAIT.has(x.name)&&!SORTER_EXCLUDED_NAMES.has(String(x.name||'').trim())&&!SORTER_EXCLUDED_NAMES.has(cleanName(x.name))).map(x=>[x.name,x])).values()];$('notice').textContent=result.length?'画像付き生徒データ '+result.length+'件を取得しました。NPCは補助リストから追加します。':'通信が不安定なため内蔵リストで遊べます。画像は代替URLからも取得します。';}load();
 function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function persist(){try{localStorage.setItem('ba-sort-v3',JSON.stringify(state))}catch(e){}}
 // Accuracy: complete bottom-up merge sort. Speed: four-round Swiss tournament.
@@ -87,7 +137,7 @@ async function prepareRanking(items,limit,done){const version=++resultVersion;re
 function downloadRanking(){const a=document.createElement('a');a.href=resultObjectURL;a.download=resultFilename;document.body.append(a);a.click();a.remove()}
 $('saveImage').onclick=()=>{if(!resultPNG)return;const mobile=/iPhone|iPad|iPod|Android/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);const file=typeof File==='function'?new File([resultPNG],resultFilename,{type:'image/png'}):null;if(mobile&&file&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'ブルーアーカイブ 推しランキング'}).catch(e=>{if(e.name!=='AbortError'){downloadRanking();$('imageStatus').textContent='表示中の画像を長押しして保存することもできます。'}})}else{downloadRanking();$('imageStatus').textContent='PNGを保存します。保存できない場合は、ランキング画像を長押しして保存してください。'}};
 $('continueSort').onclick=()=>{resultVersion++;show('play');render()};
-$('start').onclick=()=>{let items=catalogue.filter(x=>!isVariant(x)&&($('npc').checked||x.category!=='npc'));items.push(...$('custom').value.split(/[\n、,]+/).map(cleanName).filter(Boolean).filter(name=>!EXCLUDED_NO_PORTRAIT.has(name)).map(name=>hydrateItem({name,url:'',category:'npc'})).filter(x=>!isVariant(x)));items=[...new Map(items.map(x=>[x.name,x])).values()];if(items.length<2){alert('通常版のキャラが2人以上必要です');return}resetMerge(items)};
-$('resume').onclick=()=>{const previous=state;try{const saved=JSON.parse(localStorage.getItem('ba-sort-v3'));if(!saved||!Array.isArray(saved.items)||!saved.items.length||!Array.isArray(saved.runs)||!Array.isArray(saved.excluded))throw Error();state=saved;state.items=state.items.map(hydrateItem);state.rankLimit=rankingLimit();state.mode=state.mode==='speed'?'speed':'accuracy';if(state.mode==='speed'&&(!state.speed||!Array.isArray(state.speed.queue)||!Array.isArray(state.speed.records)))throw Error();state.items.forEach((item,i)=>{if((isVariant(item)||EXCLUDED_NO_PORTRAIT.has(item.name))&&!state.excluded.includes(i))state.excluded.push(i)});if(state.done)state.runs=state.runs.map(run=>run.filter(i=>!state.excluded.includes(i)));if(state.mode==='speed')state.speed.queue=state.speed.queue.filter(([a,b])=>!state.excluded.includes(a)&&!state.excluded.includes(b));state.engineVersion=4;$('rankLimit').value=String(state.rankLimit);$('modeSpeed').checked=state.mode==='speed';$('modeAccuracy').checked=state.mode==='accuracy';history=[];progress();show('play');render()}catch{state=previous;alert('再開できる保存データがありません')}};
+$('start').onclick=()=>{let items=catalogue.filter(x=>!isVariant(x)&&!SORTER_EXCLUDED_NAMES.has(String(x.name||'').trim())&&!SORTER_EXCLUDED_NAMES.has(cleanName(x.name))&&($('npc').checked||x.category!=='npc'));items.push(...$('custom').value.split(/[\n、,]+/).map(cleanName).filter(Boolean).filter(name=>!EXCLUDED_NO_PORTRAIT.has(name)&&!SORTER_EXCLUDED_NAMES.has(String(name||'').trim())&&!SORTER_EXCLUDED_NAMES.has(cleanName(name))).map(name=>hydrateItem({name,url:'',category:'npc'})).filter(x=>!isVariant(x)));items=[...new Map(items.map(x=>[x.name,x])).values()];if(items.length<2){alert('通常版のキャラが2人以上必要です');return}resetMerge(items)};
+$('resume').onclick=()=>{const previous=state;try{const saved=JSON.parse(localStorage.getItem('ba-sort-v3'));if(!saved||!Array.isArray(saved.items)||!saved.items.length||!Array.isArray(saved.runs)||!Array.isArray(saved.excluded))throw Error();state=saved;state.items=state.items.map(hydrateItem);state.rankLimit=rankingLimit();state.mode=state.mode==='speed'?'speed':'accuracy';if(state.mode==='speed'&&(!state.speed||!Array.isArray(state.speed.queue)||!Array.isArray(state.speed.records)))throw Error();state.items.forEach((item,i)=>{if((isVariant(item)||EXCLUDED_NO_PORTRAIT.has(item.name)||SORTER_EXCLUDED_NAMES.has(String(item.name||'').trim())||SORTER_EXCLUDED_NAMES.has(cleanName(item.name)))&&!state.excluded.includes(i))state.excluded.push(i)});if(state.done)state.runs=state.runs.map(run=>run.filter(i=>!state.excluded.includes(i)));if(state.mode==='speed')state.speed.queue=state.speed.queue.filter(([a,b])=>!state.excluded.includes(a)&&!state.excluded.includes(b));state.engineVersion=4;$('rankLimit').value=String(state.rankLimit);$('modeSpeed').checked=state.mode==='speed';$('modeAccuracy').checked=state.mode==='accuracy';history=[];progress();show('play');render()}catch{state=previous;alert('再開できる保存データがありません')}};
 $('left').onclick=()=>vote('L');$('right').onclick=()=>vote('R');$('skipL').onclick=()=>vote('SL');$('skipR').onclick=()=>vote('SR');$('tie').onclick=()=>vote('T');$('undo').onclick=undoVote;$('resultUndo').onclick=undoVote;$('save').onclick=()=>{persist();alert('保存しました！')};$('finish').onclick=results;$('again').onclick=()=>{resultVersion++;show('setup')};$('copy').onclick=()=>{let text=[...$('ranking').querySelectorAll('.rank')].map(x=>x.innerText).join('\n');if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert('コピーしました')).catch(()=>prompt('コピー',text));else prompt('コピー',text)};
 </script></body></html>
